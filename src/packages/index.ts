@@ -6,7 +6,8 @@ import type {
   Action,
   ToastClasses,
   ToastToDismiss,
-  PromiseIExtendedResult
+  PromiseIExtendedResult,
+  ToastTypes
 } from './types'
 import { Toaster } from './component'
 import { toast } from './state'
@@ -22,7 +23,8 @@ export {
   type Action,
   type ToastClasses,
   type ToastToDismiss,
-  type PromiseIExtendedResult
+  type PromiseIExtendedResult,
+  type ToastTypes
 }
 
 const plugin: Plugin = {
