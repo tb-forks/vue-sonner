@@ -1,7 +1,8 @@
 {
   "name": "@tb-dev/vue-sonner",
+  "description": "Sonner for Vue",
   "type": "module",
-  "version": "0.1.0+source-2.0.9",
+  "version": "0.1.1",
   "packageManager": "pnpm@10.29.3",
   "license": "MIT",
   "repository": {
