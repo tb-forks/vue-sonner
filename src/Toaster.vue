@@ -7,7 +7,7 @@
     aria-relevant="additions text"
     aria-atomic="false"
   >
-    <template v-for="(pos, index) in possiblePositions" :key="pos">
+    <template v-for="(pos, index) of possiblePositions" :key="pos">
       <ol
         ref="listRef"
         data-sonner-toaster
@@ -37,20 +37,20 @@
         @pointerdown="onPointerDown"
         @pointerup="handlePointerUp"
       >
-        <template v-for="(toast, idx) in filteredToasts(pos, index)" :key="toast.id">
+        <template v-for="(toast, idx) of filteredToasts(pos, index)" :key="toast.id">
           <Toast
-            :heights="heights"
-            :icons="icons"
+            :heights
+            :icons
             :index="idx"
-            :toast="toast"
+            :toast
             :defaultRichColors="richColors"
             :duration="toastOptions?.duration ?? duration"
             :class="toastOptions?.class ?? ''"
             :descriptionClass="toastOptions?.descriptionClass"
-            :invert="invert"
-            :visibleToasts="visibleToasts"
+            :invert
+            :visibleToasts
             :closeButton="toastOptions?.closeButton ?? closeButton"
-            :interacting="interacting"
+            :interacting
             :position="pos"
             :closeButtonPosition="toastOptions?.closeButtonPosition ?? closeButtonPosition"
             :style="toastOptions?.style"
@@ -61,7 +61,7 @@
             :close-button-aria-label="toastOptions?.closeButtonAriaLabel"
             :toasts="toastsByPosition[pos]"
             :expandByDefault="expand"
-            :gap="gap"
+            :gap
             :expanded="expanded[pos] || false"
             :swipeDirections="props.swipeDirections"
             @update:heights="updateHeights"
@@ -111,55 +111,48 @@
 </template>
 
 <script lang="ts">
-const isClient =
-  typeof window !== 'undefined' && typeof document !== 'undefined'
+const isClient = typeof window !== 'undefined' && typeof document !== 'undefined';
 
 function getDocumentDirection(): ToasterProps['dir'] {
-  if (typeof window === 'undefined') return 'ltr'
-  if (typeof document === 'undefined') return 'ltr' // For Fresh purpose
+  if (typeof window === 'undefined') return 'ltr';
+  if (typeof document === 'undefined') return 'ltr'; // For Fresh purpose
 
-  const dirAttribute = document.documentElement.getAttribute('dir')
+  const dirAttribute = document.documentElement.getAttribute('dir');
 
   if (dirAttribute === 'auto' || !dirAttribute) {
     return window.getComputedStyle(document.documentElement)
-      .direction as ToasterProps['dir']
+      .direction as ToasterProps['dir'];
   }
 
-  return dirAttribute as ToasterProps['dir']
+  return dirAttribute as ToasterProps['dir'];
 }
 </script>
 
 <script lang="ts" setup>
+import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue';
+import type { HeightT, Position, ToastT, ToastToDismiss, ToasterProps } from './types';
+import { ToastState } from './state';
+import Toast from './Toast.vue';
+import CloseIcon from './assets/CloseIcon.vue';
+import LoaderIcon from './assets/Loader.vue';
+import SuccessIcon from './assets/SuccessIcon.vue';
+import InfoIcon from './assets/InfoIcon.vue';
+import WarningIcon from './assets/WarningIcon.vue';
+import ErrorIcon from './assets/ErrorIcon.vue';
+import { assignOffset } from './hooks';
 import {
-  computed,
-  nextTick,
-  ref,
-  useAttrs,
-  watch,
-  watchEffect
-} from 'vue'
-import type {
-  HeightT,
-  Position,
-  ToastT,
-  ToastToDismiss,
-  ToasterProps
-} from './types'
-import { ToastState } from './state'
-import Toast from './Toast.vue'
-import CloseIcon from './assets/CloseIcon.vue'
-import LoaderIcon from './assets/Loader.vue'
-import SuccessIcon from './assets/SuccessIcon.vue'
-import InfoIcon from './assets/InfoIcon.vue'
-import WarningIcon from './assets/WarningIcon.vue'
-import ErrorIcon from './assets/ErrorIcon.vue'
-import { assignOffset } from './hooks'
-import { GAP, MOBILE_VIEWPORT_OFFSET, TOAST_WIDTH, VIEWPORT_OFFSET, VISIBLE_TOASTS_AMOUNT, TIME_BEFORE_UNMOUNT } from './constant'
+  GAP,
+  MOBILE_VIEWPORT_OFFSET,
+  TOAST_WIDTH,
+  VIEWPORT_OFFSET,
+  VISIBLE_TOASTS_AMOUNT,
+  TIME_BEFORE_UNMOUNT,
+} from './constant';
 
 defineOptions({
   name: 'Toaster',
-  inheritAttrs: false
-})
+  inheritAttrs: false,
+});
 
 const props = withDefaults(defineProps<ToasterProps>(), {
   invert: false,
@@ -178,10 +171,10 @@ const props = withDefaults(defineProps<ToasterProps>(), {
   dir: 'auto',
   gap: GAP,
   containerAriaLabel: 'Notifications',
-})
+});
 
-const attrs = useAttrs()
-const toasts = ref<ToastT[]>([])
+const attrs = useAttrs();
+const toasts = ref<ToastT[]>([]);
 
 const filteredToastsById = computed(() => {
   if (props.id) {
@@ -192,73 +185,73 @@ const filteredToastsById = computed(() => {
 
 function filteredToasts(pos: string, index: number) {
   return filteredToastsById.value.filter(
-    (toast) => (!toast.position && index === 0) || toast.position === pos
-  )
+    (toast) => (!toast.position && index === 0) || toast.position === pos,
+  );
 }
 const possiblePositions = computed(() => {
   const posList = filteredToastsById.value
     .filter((toast) => toast.position)
-    .map((toast) => toast.position) as Position[]
-  return posList.length > 0
-    ? Array.from(new Set([props.position].concat(posList)))
-    : [props.position]
-})
+    .map((toast) => toast.position) as Position[];
+  return posList.length > 0 ?
+    Array.from(new Set([props.position].concat(posList))) :
+    [props.position];
+});
 
 const toastsByPosition = computed(() => {
-  const result: Record<string, ToastT[]> = {}
+  const result: Record<string, ToastT[]> = {};
   possiblePositions.value.forEach((pos) => {
-    result[pos] = toasts.value.filter(t => t.position === pos)
-  })
-  return result
-})
+    result[pos] = toasts.value.filter(t => t.position === pos);
+  });
+  return result;
+});
 
-const heights = ref<HeightT[]>([])
-const expanded = ref<Record<string, boolean>>({})
-const interacting = ref(false)
+const heights = ref<HeightT[]>([]);
+const expanded = ref<Record<string, boolean>>({});
+const interacting = ref(false);
 
 // Initialize expanded state for each position
 watchEffect(() => {
   possiblePositions.value.forEach(pos => {
     if (!(pos in expanded.value)) {
-      expanded.value[pos] = false
+      expanded.value[pos] = false;
     }
-  })
-})
+  });
+});
 const actualTheme = ref(
-  props.theme !== 'system'
-    ? props.theme
-    : typeof window !== 'undefined'
-    ? window.matchMedia &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light'
-    : 'light'
-)
+  props.theme !== 'system' ?
+    props.theme :
+    typeof window !== 'undefined' ?
+    window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches ?
+      'dark' :
+      'light' :
+    'light',
+);
 
-const listRef = ref<HTMLOListElement[] | HTMLOListElement | null>(null)
-const lastFocusedElementRef = ref<HTMLElement | null>(null)
-const isFocusWithinRef = ref(false)
+const listRef = ref<HTMLOListElement[] | HTMLOListElement | null>(null);
+const lastFocusedElementRef = ref<HTMLElement | null>(null);
+const isFocusWithinRef = ref(false);
 
 const hotkeyLabel = props.hotkey
   .join('+')
   .replace(/Key/g, '')
-  .replace(/Digit/g, '')
+  .replace(/Digit/g, '');
 
 function removeToast(toastToRemove: ToastT) {
   if (!toasts.value.find((toast) => toast.id === toastToRemove.id)?.delete) {
-    ToastState.dismiss(toastToRemove.id)
+    ToastState.dismiss(toastToRemove.id);
   }
 
   // First remove toast
-  toasts.value = toasts.value.filter(({ id }) => id !== toastToRemove.id)
+  toasts.value = toasts.value.filter(({ id }) => id !== toastToRemove.id);
 
   // Delay cleaning heights to give animation time to complete
   setTimeout(() => {
     // Ensure toast has been actually removed before cleaning heights
     if (!toasts.value.find(t => t.id === toastToRemove.id)) {
-      heights.value = heights.value.filter(h => h.toastId !== toastToRemove.id)
+      heights.value = heights.value.filter(h => h.toastId !== toastToRemove.id);
     }
-  }, TIME_BEFORE_UNMOUNT + 50) // Slightly delay to ensure animation completion
+  }, TIME_BEFORE_UNMOUNT + 50); // Slightly delay to ensure animation completion
 }
 
 function onBlur(event: FocusEvent | any) {
@@ -266,79 +259,78 @@ function onBlur(event: FocusEvent | any) {
     isFocusWithinRef.value &&
     !event.currentTarget?.contains?.(event.relatedTarget)
   ) {
-    isFocusWithinRef.value = false
+    isFocusWithinRef.value = false;
     if (lastFocusedElementRef.value) {
-      lastFocusedElementRef.value.focus({ preventScroll: true })
-      lastFocusedElementRef.value = null
+      lastFocusedElementRef.value.focus({ preventScroll: true });
+      lastFocusedElementRef.value = null;
     }
   }
 }
 
 function onFocus(event: FocusEvent | any) {
-  const isNotDismissible =
-    event.target instanceof HTMLElement &&
-    event.target.dataset.dismissible === 'false'
+  const isNotDismissible = event.target instanceof HTMLElement &&
+    event.target.dataset.dismissible === 'false';
 
-  if (isNotDismissible) return
+  if (isNotDismissible) return;
 
   if (!isFocusWithinRef.value) {
-    isFocusWithinRef.value = true
-    lastFocusedElementRef.value = event.relatedTarget as HTMLElement
+    isFocusWithinRef.value = true;
+    lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
   }
 }
 
 function onPointerDown(event: PointerEvent) {
   if (event.target) {
-    const isNotDismissible =
-      event.target instanceof HTMLElement &&
-      event.target.dataset.dismissible === 'false'
+    const isNotDismissible = event.target instanceof HTMLElement &&
+      event.target.dataset.dismissible === 'false';
 
-    if (isNotDismissible) return
+    if (isNotDismissible) return;
   }
-  interacting.value = true
+  interacting.value = true;
 }
 
 watchEffect((onInvalidate) => {
   const unsubscribe = ToastState.subscribe((toast) => {
     if ((toast as ToastToDismiss).dismiss) {
       requestAnimationFrame(() => {
-        toasts.value = toasts.value.map((t) => t.id === toast.id ? { ...t, delete: true } : t)
-      })
-      return
+        toasts.value = toasts.value.map((t) => t.id === toast.id ? { ...t, delete: true } : t);
+      });
+      return;
     }
 
     nextTick(() => {
-    const indexOfExistingToast = toasts.value.findIndex(
-        (t) => t.id === toast.id
-      )
+      const indexOfExistingToast = toasts.value.findIndex(
+        (t) => t.id === toast.id,
+      );
 
       // Update the toast if it already exists
       if (indexOfExistingToast !== -1) {
         toasts.value = [
           ...toasts.value.slice(0, indexOfExistingToast),
           { ...toasts.value[indexOfExistingToast], ...toast },
-          ...toasts.value.slice(indexOfExistingToast + 1)
-        ]
-      } else {
-        toasts.value = [toast, ...toasts.value]
+          ...toasts.value.slice(indexOfExistingToast + 1),
+        ];
       }
-    })
-  })
+      else {
+        toasts.value = [toast, ...toasts.value];
+      }
+    });
+  });
 
-  onInvalidate(unsubscribe)
-})
+  onInvalidate(unsubscribe);
+});
 
 watchEffect((onInvalidate) => {
   // Guard: skip if running in a non-browser environment (e.g. SSR)
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') return;
 
   /**
    * If the theme prop is explicitly set (e.g., 'light' or 'dark'),
    * use it directly and stop watching for system preference.
    */
   if (props.theme !== 'system') {
-    actualTheme.value = props.theme
-    return
+    actualTheme.value = props.theme;
+    return;
   }
 
   /**
@@ -346,7 +338,7 @@ watchEffect((onInvalidate) => {
    * Watch the user's OS-level color scheme preference and
    * apply 'dark' or 'light' accordingly.
    */
-  const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
   /**
    * Helper function to update the actualTheme value
@@ -355,136 +347,143 @@ watchEffect((onInvalidate) => {
    * @param {boolean} matches - true if dark mode is preferred
    */
   const updateTheme = (matches: boolean) => {
-    actualTheme.value = matches ? 'dark' : 'light'
-  }
+    actualTheme.value = matches ? 'dark' : 'light';
+  };
 
   // Apply initial system preference
-  updateTheme(darkMediaQuery.matches)
+  updateTheme(darkMediaQuery.matches);
 
   /**
    * Media query listener for changes to system preference
    * Compatible with modern browsers and legacy Safari.
    */
   const handler = (event: MediaQueryListEvent | MediaQueryList) => {
-    updateTheme(event.matches)
-  }
+    updateTheme(event.matches);
+  };
 
   try {
     // ✅ Standard method (Chrome, Firefox, etc.)
-    darkMediaQuery.addEventListener('change', handler)
-  } catch {
+    darkMediaQuery.addEventListener('change', handler);
+  }
+  catch {
     // 🐞 Safari fallback
-    darkMediaQuery.addListener(handler)
+    darkMediaQuery.addListener(handler);
   }
 
   // Cleanup listener on component unmount or dependency change
   onInvalidate(() => {
     try {
-      darkMediaQuery.removeEventListener('change', handler)
-    } catch {
-      darkMediaQuery.removeListener(handler)
+      darkMediaQuery.removeEventListener('change', handler);
     }
-  })
-})
+    catch {
+      darkMediaQuery.removeListener(handler);
+    }
+  });
+});
 
 watchEffect(() => {
   if (listRef.value && lastFocusedElementRef.value) {
-    lastFocusedElementRef.value.focus({ preventScroll: true })
-    lastFocusedElementRef.value = null
-    isFocusWithinRef.value = false
+    lastFocusedElementRef.value.focus({ preventScroll: true });
+    lastFocusedElementRef.value = null;
+    isFocusWithinRef.value = false;
   }
-})
+});
 
 watchEffect(() => {
   // Ensure expanded is always false when no toasts are present / only one left
   if (toasts.value.length <= 1) {
     // Reset all positions to false
     Object.keys(expanded.value).forEach(pos => {
-      expanded.value[pos] = false
-    })
+      expanded.value[pos] = false;
+    });
   }
-})
+});
 
 watchEffect((onInvalidate) => {
   function handleKeyDown(event: KeyboardEvent) {
     const isHotkeyPressed = props.hotkey.every(
-      (key) => (event as any)[key] || event.code === key
-    )
+      (key) => (event as any)[key] || event.code === key,
+    );
 
-    const listRefItem = Array.isArray(listRef.value)
-      ? listRef.value[0]
-      : listRef.value
+    const listRefItem = Array.isArray(listRef.value) ?
+      listRef.value[0] :
+      listRef.value;
 
     if (isHotkeyPressed) {
       // Expand all positions when hotkey is pressed
       possiblePositions.value.forEach(pos => {
-        expanded.value[pos] = true
-      })
-      listRefItem?.focus()
+        expanded.value[pos] = true;
+      });
+      listRefItem?.focus();
     }
 
-    const isItemActive =
-      document.activeElement === listRef.value ||
-      listRefItem?.contains(document.activeElement)
+    const isItemActive = document.activeElement === listRef.value ||
+      listRefItem?.contains(document.activeElement);
 
     if (event.code === 'Escape' && isItemActive) {
       // Collapse all positions when escape is pressed
       possiblePositions.value.forEach(pos => {
-        expanded.value[pos] = false
-      })
+        expanded.value[pos] = false;
+      });
     }
   }
 
-  if (!isClient) return
+  if (!isClient) return;
 
-  document.addEventListener('keydown', handleKeyDown)
+  document.addEventListener('keydown', handleKeyDown);
 
   onInvalidate(() => {
-    document.removeEventListener('keydown', handleKeyDown)
-  })
-})
+    document.removeEventListener('keydown', handleKeyDown);
+  });
+});
 
-function handleMouseEnter(event: MouseEvent) { 
-  const target = event.currentTarget as HTMLElement
-  const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position')
-  expanded.value[position] = true 
+function handleMouseEnter(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement;
+  const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position');
+  expanded.value[position] = true;
 }
-function handleMouseLeave(event: MouseEvent) { 
+function handleMouseLeave(event: MouseEvent) {
   if (!interacting.value) {
-    const target = event.currentTarget as HTMLElement
-    const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position')
-    expanded.value[position] = false 
+    const target = event.currentTarget as HTMLElement;
+    const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position');
+    expanded.value[position] = false;
   }
 }
-function handleDragEnd() { 
+function handleDragEnd() {
   // Reset all positions to false when drag ends
   Object.keys(expanded.value).forEach(pos => {
-    expanded.value[pos] = false
-  })
+    expanded.value[pos] = false;
+  });
 }
-function handlePointerUp() { interacting.value = false }
-function updateHeights(h: HeightT[]) { heights.value = h }
+function handlePointerUp() {
+  interacting.value = false;
+}
+function updateHeights(h: HeightT[]) {
+  heights.value = h;
+}
 function updateHeight(h: HeightT) {
-  const index = heights.value.findIndex(item => item.toastId === h.toastId)
+  const index = heights.value.findIndex(item => item.toastId === h.toastId);
   if (index !== -1) {
-    heights.value[index] = h
-  } else {
+    heights.value[index] = h;
+  }
+  else {
     // Insert by position grouping, keeping toasts of the same position contiguous
-    const samePositionIndex = heights.value.findIndex(item => item.position === h.position)
+    const samePositionIndex = heights.value.findIndex(item => item.position === h.position);
     if (samePositionIndex !== -1) {
       // Insert at the first position of the same position
-      heights.value.splice(samePositionIndex, 0, h)
-    } else {
+      heights.value.splice(samePositionIndex, 0, h);
+    }
+    else {
       // If no same position exists, add to the beginning
-      heights.value.unshift(h)
+      heights.value.unshift(h);
     }
   }
 }
 </script>
 
 <style>
-html[dir='ltr'],
-[data-sonner-toaster][dir='ltr'] {
+html[dir="ltr"],
+[data-sonner-toaster][dir="ltr"] {
   --toast-icon-margin-start: -3px;
   --toast-icon-margin-end: 4px;
   --toast-svg-margin-start: -1px;
@@ -493,8 +492,8 @@ html[dir='ltr'],
   --toast-button-margin-end: 0;
 }
 
-html[dir='rtl'],
-[data-sonner-toaster][dir='rtl'] {
+html[dir="rtl"],
+[data-sonner-toaster][dir="rtl"] {
   --toast-icon-margin-start: 4px;
   --toast-icon-margin-end: -3px;
   --toast-svg-margin-start: 0px;
@@ -506,8 +505,9 @@ html[dir='rtl'],
 [data-sonner-toaster] {
   position: fixed;
   width: var(--width);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
-    Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   --gray1: hsl(0, 0%, 99%);
   --gray2: hsl(0, 0%, 97.3%);
   --gray3: hsl(0, 0%, 95.1%);
@@ -531,29 +531,29 @@ html[dir='rtl'],
 }
 
 @media (hover: none) and (pointer: coarse) {
-  [data-sonner-toaster][data-lifted='true'] {
+  [data-sonner-toaster][data-lifted="true"] {
     transform: none;
   }
 }
 
-[data-sonner-toaster][data-x-position='right'] {
+[data-sonner-toaster][data-x-position="right"] {
   right: var(--offset-right);
 }
 
-[data-sonner-toaster][data-x-position='left'] {
+[data-sonner-toaster][data-x-position="left"] {
   left: var(--offset-left);
 }
 
-[data-sonner-toaster][data-x-position='center'] {
+[data-sonner-toaster][data-x-position="center"] {
   left: 50%;
   transform: translateX(-50%);
 }
 
-[data-sonner-toaster][data-y-position='top'] {
+[data-sonner-toaster][data-y-position="top"] {
   top: var(--offset-top);
 }
 
-[data-sonner-toaster][data-y-position='bottom'] {
+[data-sonner-toaster][data-y-position="bottom"] {
   bottom: var(--offset-bottom);
 }
 
@@ -571,7 +571,7 @@ html[dir='rtl'],
   overflow-wrap: anywhere;
 }
 
-[data-sonner-toast][data-styled='true'] {
+[data-sonner-toast][data-styled="true"] {
   padding: 16px;
   background: var(--normal-bg);
   border: 1px solid var(--normal-border);
@@ -589,41 +589,41 @@ html[dir='rtl'],
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
-[data-sonner-toast][data-y-position='top'] {
+[data-sonner-toast][data-y-position="top"] {
   top: 0;
   --y: translateY(-100%);
   --lift: 1;
   --lift-amount: calc(1 * var(--gap));
 }
 
-[data-sonner-toast][data-y-position='bottom'] {
+[data-sonner-toast][data-y-position="bottom"] {
   bottom: 0;
   --y: translateY(100%);
   --lift: -1;
   --lift-amount: calc(var(--lift) * var(--gap));
 }
 
-[data-sonner-toast][data-styled='true'] [data-description] {
+[data-sonner-toast][data-styled="true"] [data-description] {
   font-weight: 400;
   line-height: 1.4;
   color: #3f3f3f;
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-styled='true'] [data-description] {
+[data-rich-colors="true"][data-sonner-toast][data-styled="true"] [data-description] {
   color: inherit;
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] [data-description] {
+[data-sonner-toaster][data-sonner-theme="dark"] [data-description] {
   color: hsl(0, 0%, 91%);
 }
 
-[data-sonner-toast][data-styled='true'] [data-title] {
+[data-sonner-toast][data-styled="true"] [data-title] {
   font-weight: 500;
   line-height: 1.5;
   color: inherit;
 }
 
-[data-sonner-toast][data-styled='true'] [data-icon] {
+[data-sonner-toast][data-styled="true"] [data-icon] {
   display: flex;
   height: 16px;
   width: 16px;
@@ -635,29 +635,29 @@ html[dir='rtl'],
   margin-right: var(--toast-icon-margin-end);
 }
 
-[data-sonner-toast][data-promise='true'] [data-icon] > svg {
+[data-sonner-toast][data-promise="true"] [data-icon] > svg {
   opacity: 0;
   transform: scale(0.8);
   transform-origin: center;
   animation: sonner-fade-in 300ms ease forwards;
 }
 
-[data-sonner-toast][data-styled='true'] [data-icon] > * {
+[data-sonner-toast][data-styled="true"] [data-icon] > * {
   flex-shrink: 0;
 }
 
-[data-sonner-toast][data-styled='true'] [data-icon] svg {
+[data-sonner-toast][data-styled="true"] [data-icon] svg {
   margin-left: var(--toast-svg-margin-start);
   margin-right: var(--toast-svg-margin-end);
 }
 
-[data-sonner-toast][data-styled='true'] [data-content] {
+[data-sonner-toast][data-styled="true"] [data-content] {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-[data-sonner-toast][data-styled='true'] [data-button] {
+[data-sonner-toast][data-styled="true"] [data-button] {
   border-radius: 4px;
   padding-left: 8px;
   padding-right: 8px;
@@ -677,25 +677,25 @@ html[dir='rtl'],
   transition: opacity 400ms, box-shadow 200ms;
 }
 
-[data-sonner-toast][data-styled='true'] [data-button]:focus-visible {
+[data-sonner-toast][data-styled="true"] [data-button]:focus-visible {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
-[data-sonner-toast][data-styled='true'] [data-button]:first-of-type {
+[data-sonner-toast][data-styled="true"] [data-button]:first-of-type {
   margin-left: var(--toast-button-margin-start);
   margin-right: var(--toast-button-margin-end);
 }
 
-[data-sonner-toast][data-styled='true'] [data-cancel] {
+[data-sonner-toast][data-styled="true"] [data-cancel] {
   color: var(--normal-text);
   background: rgba(0, 0, 0, 0.08);
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] [data-sonner-toast][data-styled='true'] [data-cancel] {
+[data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast][data-styled="true"] [data-cancel] {
   background: rgba(255, 255, 255, 0.3);
 }
 
-[data-sonner-toaster] [data-close-button-position='top-left'] {
+[data-sonner-toaster] [data-close-button-position="top-left"] {
   --toast-close-button-left: 0;
   --toast-close-button-right: unset;
   --toast-close-button-top: 0;
@@ -703,7 +703,7 @@ html[dir='rtl'],
   --toast-close-button-transform: translate(-35%, -35%);
 }
 
-[data-sonner-toaster] [data-close-button-position='top-right'] {
+[data-sonner-toaster] [data-close-button-position="top-right"] {
   --toast-close-button-left: unset;
   --toast-close-button-right: 0;
   --toast-close-button-top: 0;
@@ -711,7 +711,7 @@ html[dir='rtl'],
   --toast-close-button-transform: translate(35%, -35%);
 }
 
-[data-sonner-toaster] [data-close-button-position='bottom-left'] {
+[data-sonner-toaster] [data-close-button-position="bottom-left"] {
   --toast-close-button-left: 0;
   --toast-close-button-right: unset;
   --toast-close-button-top: unset;
@@ -719,7 +719,7 @@ html[dir='rtl'],
   --toast-close-button-transform: translate(-35%, 35%);
 }
 
-[data-sonner-toaster] [data-close-button-position='bottom-right'] {
+[data-sonner-toaster] [data-close-button-position="bottom-right"] {
   --toast-close-button-left: unset;
   --toast-close-button-right: 0;
   --toast-close-button-top: unset;
@@ -727,7 +727,7 @@ html[dir='rtl'],
   --toast-close-button-transform: translate(35%, 35%);
 }
 
-[data-sonner-toast][data-styled='true'] [data-close-button] {
+[data-sonner-toast][data-styled="true"] [data-close-button] {
   position: absolute;
   left: var(--toast-close-button-left);
   right: var(--toast-close-button-right);
@@ -749,21 +749,21 @@ html[dir='rtl'],
   transition: opacity 100ms, background 200ms, border-color 200ms;
 }
 
-[data-sonner-toast][data-styled='true'] [data-close-button]:focus-visible {
+[data-sonner-toast][data-styled="true"] [data-close-button]:focus-visible {
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
-[data-sonner-toast][data-styled='true'] [data-disabled='true'] {
+[data-sonner-toast][data-styled="true"] [data-disabled="true"] {
   cursor: not-allowed;
 }
 
-[data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
+[data-sonner-toast][data-styled="true"]:hover [data-close-button]:hover {
   background: var(--gray2);
   border-color: var(--gray5);
 }
 
-[data-sonner-toast][data-swiping='true']::before {
-  content: '';
+[data-sonner-toast][data-swiping="true"]::before {
+  content: "";
   position: absolute;
   left: -100%;
   right: -100%;
@@ -771,25 +771,25 @@ html[dir='rtl'],
   z-index: -1;
 }
 
-[data-sonner-toast][data-y-position='top'][data-swiping='true']::before {
+[data-sonner-toast][data-y-position="top"][data-swiping="true"]::before {
   bottom: 50%;
   transform: scaleY(3) translateY(50%);
 }
 
-[data-sonner-toast][data-y-position='bottom'][data-swiping='true']::before {
+[data-sonner-toast][data-y-position="bottom"][data-swiping="true"]::before {
   top: 50%;
   transform: scaleY(3) translateY(-50%);
 }
 
-[data-sonner-toast][data-swiping='false'][data-removed='true']::before {
-  content: '';
+[data-sonner-toast][data-swiping="false"][data-removed="true"]::before {
+  content: "";
   position: absolute;
   inset: 0;
   transform: scaleY(2);
 }
 
-[data-sonner-toast][data-expanded='true']::after {
-  content: '';
+[data-sonner-toast][data-expanded="true"]::after {
+  content: "";
   position: absolute;
   left: 0;
   height: calc(var(--gap) + 1px);
@@ -797,12 +797,12 @@ html[dir='rtl'],
   width: 100%;
 }
 
-[data-sonner-toast][data-mounted='true'] {
+[data-sonner-toast][data-mounted="true"] {
   --y: translateY(0);
   opacity: 1;
 }
 
-[data-sonner-toast][data-expanded='false'][data-front='false'] {
+[data-sonner-toast][data-expanded="false"][data-front="false"] {
   --scale: var(--toasts-before) * 0.05 + 1;
   --y: translateY(calc(var(--lift-amount) * var(--toasts-before))) scale(calc(-1 * var(--toasts-before) * 0.05 + 1));
   height: var(--front-toast-height);
@@ -812,77 +812,77 @@ html[dir='rtl'],
   transition: opacity 400ms;
 }
 
-[data-sonner-toast][data-x-position='right'] {
+[data-sonner-toast][data-x-position="right"] {
   right: 0;
 }
 
-[data-sonner-toast][data-x-position='left'] {
+[data-sonner-toast][data-x-position="left"] {
   left: 0;
 }
 
-[data-sonner-toast][data-expanded='false'][data-front='false'][data-styled='true'] > * {
+[data-sonner-toast][data-expanded="false"][data-front="false"][data-styled="true"] > * {
   opacity: 0;
 }
 
-[data-sonner-toast][data-visible='false'] {
+[data-sonner-toast][data-visible="false"] {
   opacity: 0;
   pointer-events: none;
 }
 
-[data-sonner-toast][data-mounted='true'][data-expanded='true'] {
+[data-sonner-toast][data-mounted="true"][data-expanded="true"] {
   --y: translateY(calc(var(--lift) * var(--offset)));
   height: var(--initial-height);
 }
 
-[data-sonner-toast][data-removed='true'][data-front='true'][data-swipe-out='false'] {
+[data-sonner-toast][data-removed="true"][data-front="true"][data-swipe-out="false"] {
   --y: translateY(calc(var(--lift) * -100%));
   opacity: 0;
 }
 
-[data-sonner-toast][data-removed='true'][data-front='false'][data-swipe-out='false'][data-expanded='true'] {
+[data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="true"] {
   --y: translateY(calc(var(--lift) * var(--offset) + var(--lift) * -100%));
   opacity: 0;
 }
 
-[data-sonner-toast][data-removed='true'][data-front='false'][data-swipe-out='false'][data-expanded='false'] {
+[data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="false"] {
   --y: translateY(40%);
   opacity: 0;
   transition: transform 500ms, opacity 200ms;
 }
 
-[data-sonner-toast][data-removed='true'][data-front='false']::before {
+[data-sonner-toast][data-removed="true"][data-front="false"]::before {
   height: calc(var(--initial-height) + 20%);
 }
 
-[data-sonner-toast][data-swiping='true'] {
+[data-sonner-toast][data-swiping="true"] {
   transform: var(--y) translateY(var(--swipe-amount-y, 0px)) translateX(var(--swipe-amount-x, 0px));
   transition: none;
 }
 
-[data-sonner-toast][data-swiped='true'] {
+[data-sonner-toast][data-swiped="true"] {
   user-select: none;
 }
 
-[data-sonner-toast][data-swipe-out='true'][data-y-position='bottom'],
-[data-sonner-toast][data-swipe-out='true'][data-y-position='top'] {
+[data-sonner-toast][data-swipe-out="true"][data-y-position="bottom"],
+[data-sonner-toast][data-swipe-out="true"][data-y-position="top"] {
   animation-duration: 200ms;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
 }
 
-[data-sonner-toast][data-swipe-out='true'][data-swipe-direction='left'] {
+[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="left"] {
   animation-name: swipe-out-left;
 }
 
-[data-sonner-toast][data-swipe-out='true'][data-swipe-direction='right'] {
+[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="right"] {
   animation-name: swipe-out-right;
 }
 
-[data-sonner-toast][data-swipe-out='true'][data-swipe-direction='up'] {
+[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="up"] {
   animation-name: swipe-out-up;
 }
 
-[data-sonner-toast][data-swipe-out='true'][data-swipe-direction='down'] {
+[data-sonner-toast][data-swipe-out="true"][data-swipe-direction="down"] {
   animation-name: swipe-out-down;
 }
 
@@ -942,7 +942,7 @@ html[dir='rtl'],
     width: 100%;
   }
 
-  [data-sonner-toaster][dir='rtl'] {
+  [data-sonner-toaster][dir="rtl"] {
     left: calc(var(--mobile-offset-left) * -1);
   }
 
@@ -952,27 +952,27 @@ html[dir='rtl'],
     width: calc(100% - var(--mobile-offset-left) * 2);
   }
 
-  [data-sonner-toaster][data-x-position='left'] {
+  [data-sonner-toaster][data-x-position="left"] {
     left: var(--mobile-offset-left);
   }
 
-  [data-sonner-toaster][data-y-position='bottom'] {
+  [data-sonner-toaster][data-y-position="bottom"] {
     bottom: calc(var(--mobile-offset-bottom) + max(env(safe-area-inset-bottom), 0px));
   }
 
-  [data-sonner-toaster][data-y-position='top'] {
+  [data-sonner-toaster][data-y-position="top"] {
     top: calc(var(--mobile-offset-top) + max(env(safe-area-inset-top), 0px));
   }
 
-  [data-sonner-toaster][data-x-position='center'] {
+  [data-sonner-toaster][data-x-position="center"] {
     left: var(--mobile-offset-left);
     right: var(--mobile-offset-right);
     transform: none;
   }
 }
 
-[data-sonner-toaster][data-sonner-theme='light'] {
-  --normal-bg: #fff;
+[data-sonner-toaster][data-sonner-theme="light"] {
+  --normal-bg: #ffffff;
   --normal-border: var(--gray4);
   --normal-text: var(--gray12);
 
@@ -993,20 +993,20 @@ html[dir='rtl'],
   --error-text: hsl(360, 100%, 45%);
 }
 
-[data-sonner-toaster][data-sonner-theme='light'] [data-sonner-toast][data-invert='true'] {
-  --normal-bg: #000;
+[data-sonner-toaster][data-sonner-theme="light"] [data-sonner-toast][data-invert="true"] {
+  --normal-bg: #000000;
   --normal-border: hsl(0, 0%, 20%);
   --normal-text: var(--gray1);
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] [data-sonner-toast][data-invert='true'] {
-  --normal-bg: #fff;
+[data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast][data-invert="true"] {
+  --normal-bg: #ffffff;
   --normal-border: var(--gray3);
   --normal-text: var(--gray12);
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] {
-  --normal-bg: #000;
+[data-sonner-toaster][data-sonner-theme="dark"] {
+  --normal-bg: #000000;
   --normal-bg-hover: hsl(0, 0%, 12%);
   --normal-border: hsl(0, 0%, 20%);
   --normal-border-hover: hsl(0, 0%, 25%);
@@ -1029,60 +1029,60 @@ html[dir='rtl'],
   --error-text: hsl(358, 100%, 81%);
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] [data-sonner-toast] [data-close-button] {
+[data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast] [data-close-button] {
   background: var(--normal-bg);
   border-color: var(--normal-border);
   color: var(--normal-text);
 }
 
-[data-sonner-toaster][data-sonner-theme='dark'] [data-sonner-toast] [data-close-button]:hover {
+[data-sonner-toaster][data-sonner-theme="dark"] [data-sonner-toast] [data-close-button]:hover {
   background: var(--normal-bg-hover);
   border-color: var(--normal-border-hover);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='success'] {
+[data-rich-colors="true"][data-sonner-toast][data-type="success"] {
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='success'] [data-close-button] {
+[data-rich-colors="true"][data-sonner-toast][data-type="success"] [data-close-button] {
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='info'] {
+[data-rich-colors="true"][data-sonner-toast][data-type="info"] {
   background: var(--info-bg);
   border-color: var(--info-border);
   color: var(--info-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='info'] [data-close-button] {
+[data-rich-colors="true"][data-sonner-toast][data-type="info"] [data-close-button] {
   background: var(--info-bg);
   border-color: var(--info-border);
   color: var(--info-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='warning'] {
+[data-rich-colors="true"][data-sonner-toast][data-type="warning"] {
   background: var(--warning-bg);
   border-color: var(--warning-border);
   color: var(--warning-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='warning'] [data-close-button] {
+[data-rich-colors="true"][data-sonner-toast][data-type="warning"] [data-close-button] {
   background: var(--warning-bg);
   border-color: var(--warning-border);
   color: var(--warning-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='error'] {
+[data-rich-colors="true"][data-sonner-toast][data-type="error"] {
   background: var(--error-bg);
   border-color: var(--error-border);
   color: var(--error-text);
 }
 
-[data-rich-colors='true'][data-sonner-toast][data-type='error'] [data-close-button] {
+[data-rich-colors="true"][data-sonner-toast][data-type="error"] [data-close-button] {
   background: var(--error-bg);
   border-color: var(--error-border);
   color: var(--error-text);
@@ -1097,7 +1097,7 @@ html[dir='rtl'],
   z-index: 10;
 }
 
-.sonner-loading-wrapper[data-visible='false'] {
+.sonner-loading-wrapper[data-visible="false"] {
   transform-origin: center;
   animation: sonner-fade-out 0.2s ease forwards;
 }
@@ -1230,7 +1230,7 @@ html[dir='rtl'],
   transition: opacity 200ms, transform 200ms;
 }
 
-.sonner-loader[data-visible='false'] {
+.sonner-loader[data-visible="false"] {
   opacity: 0;
   transform: scale(0.8) translate(-50%, -50%);
 }
