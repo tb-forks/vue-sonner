@@ -1,25 +1,41 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["src/**/*", "src/**/*.vue"],
   "compilerOptions": {
-    "moduleResolution": "Node",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"],
-      "~/*": ["./app/*"]
-    }
+    "baseUrl": ".",
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": false,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "downlevelIteration": false,
+    "experimentalDecorators": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmitOnError": true,
+
+    "types": ["vite/client"]
   },
-  "include": [
-    "app/**/*.ts",
-    "app/**/*.d.ts",
-    "app/**/*.tsx",
-    "app/**/*.vue",
-    "src/packages/**/*.ts",
-    "src/packages/**/*.d.ts",
-    "src/packages/**/*.tsx",
-    "src/packages/**/*.vue",
-    "src/runtime/**/*.ts",
-    "src/module.ts",
-    "components.d.ts"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "vueCompilerOptions": {
+    "checkUnknownComponents": true,
+    "checkUnknownDirectives": true
+  }
 }
