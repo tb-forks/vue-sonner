@@ -6,7 +6,6 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
   plugins: [vue(), dts({ rollupTypes: false })],
   build: {
-    target: 'esnext',
     outDir: 'dist',
     emptyOutDir: true,
     minify: false,
