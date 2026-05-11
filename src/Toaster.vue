@@ -111,35 +111,35 @@
 </template>
 
 <script lang="ts">
-const isClient = typeof window !== 'undefined' && typeof document !== 'undefined';
+const isClient = typeof window !== "undefined" && typeof document !== "undefined";
 
-function getDocumentDirection(): ToasterProps['dir'] {
-  if (typeof window === 'undefined') return 'ltr';
-  if (typeof document === 'undefined') return 'ltr'; // For Fresh purpose
+function getDocumentDirection(): ToasterProps["dir"] {
+  if (typeof window === "undefined") return "ltr";
+  if (typeof document === "undefined") return "ltr"; // For Fresh purpose
 
-  const dirAttribute = document.documentElement.getAttribute('dir');
+  const dirAttribute = document.documentElement.getAttribute("dir");
 
-  if (dirAttribute === 'auto' || !dirAttribute) {
+  if (dirAttribute === "auto" || !dirAttribute) {
     return window.getComputedStyle(document.documentElement)
-      .direction as ToasterProps['dir'];
+      .direction as ToasterProps["dir"];
   }
 
-  return dirAttribute as ToasterProps['dir'];
+  return dirAttribute as ToasterProps["dir"];
 }
 </script>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue';
-import type { HeightT, Position, ToastT, ToastToDismiss, ToasterProps } from './types';
-import { ToastState } from './state';
-import Toast from './Toast.vue';
-import CloseIcon from './assets/CloseIcon.vue';
-import LoaderIcon from './assets/Loader.vue';
-import SuccessIcon from './assets/SuccessIcon.vue';
-import InfoIcon from './assets/InfoIcon.vue';
-import WarningIcon from './assets/WarningIcon.vue';
-import ErrorIcon from './assets/ErrorIcon.vue';
-import { assignOffset } from './hooks';
+import { computed, nextTick, ref, useAttrs, watchEffect } from "vue";
+import type { HeightT, Position, ToastT, ToastToDismiss, ToasterProps } from "./types";
+import { ToastState } from "./state";
+import Toast from "./Toast.vue";
+import CloseIcon from "./assets/CloseIcon.vue";
+import LoaderIcon from "./assets/Loader.vue";
+import SuccessIcon from "./assets/SuccessIcon.vue";
+import InfoIcon from "./assets/InfoIcon.vue";
+import WarningIcon from "./assets/WarningIcon.vue";
+import ErrorIcon from "./assets/ErrorIcon.vue";
+import { assignOffset } from "./hooks";
 import {
   GAP,
   MOBILE_VIEWPORT_OFFSET,
@@ -147,30 +147,30 @@ import {
   VIEWPORT_OFFSET,
   VISIBLE_TOASTS_AMOUNT,
   TIME_BEFORE_UNMOUNT,
-} from './constant';
+} from "./constant";
 
 defineOptions({
-  name: 'Toaster',
+  name: "Toaster",
   inheritAttrs: false,
 });
 
 const props = withDefaults(defineProps<ToasterProps>(), {
   invert: false,
-  position: 'bottom-right',
-  closeButtonPosition: 'top-left',
-  hotkey: () => ['altKey', 'KeyT'],
+  position: "bottom-right",
+  closeButtonPosition: "top-left",
+  hotkey: () => ["altKey", "KeyT"],
   expand: false,
   closeButton: false,
-  class: '',
+  class: "",
   offset: VIEWPORT_OFFSET,
   mobileOffset: MOBILE_VIEWPORT_OFFSET,
-  theme: 'light',
+  theme: "light",
   richColors: false,
   visibleToasts: VISIBLE_TOASTS_AMOUNT,
   toastOptions: () => ({}),
-  dir: 'auto',
+  dir: "auto",
   gap: GAP,
-  containerAriaLabel: 'Notifications',
+  containerAriaLabel: "Notifications",
 });
 
 const attrs = useAttrs();
@@ -218,14 +218,14 @@ watchEffect(() => {
   });
 });
 const actualTheme = ref(
-  props.theme !== 'system' ?
+  props.theme !== "system" ?
     props.theme :
-    typeof window !== 'undefined' ?
+    typeof window !== "undefined" ?
     window.matchMedia &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches ?
-      'dark' :
-      'light' :
-    'light',
+      window.matchMedia("(prefers-color-scheme: dark)").matches ?
+      "dark" :
+      "light" :
+    "light",
 );
 
 const listRef = ref<HTMLOListElement[] | HTMLOListElement | null>(null);
@@ -233,9 +233,9 @@ const lastFocusedElementRef = ref<HTMLElement | null>(null);
 const isFocusWithinRef = ref(false);
 
 const hotkeyLabel = props.hotkey
-  .join('+')
-  .replace(/Key/g, '')
-  .replace(/Digit/g, '');
+  .join("+")
+  .replace(/Key/g, "")
+  .replace(/Digit/g, "");
 
 function removeToast(toastToRemove: ToastT) {
   if (!toasts.value.find((toast) => toast.id === toastToRemove.id)?.delete) {
@@ -269,7 +269,7 @@ function onBlur(event: FocusEvent | any) {
 
 function onFocus(event: FocusEvent | any) {
   const isNotDismissible = event.target instanceof HTMLElement &&
-    event.target.dataset.dismissible === 'false';
+    event.target.dataset.dismissible === "false";
 
   if (isNotDismissible) return;
 
@@ -282,7 +282,7 @@ function onFocus(event: FocusEvent | any) {
 function onPointerDown(event: PointerEvent) {
   if (event.target) {
     const isNotDismissible = event.target instanceof HTMLElement &&
-      event.target.dataset.dismissible === 'false';
+      event.target.dataset.dismissible === "false";
 
     if (isNotDismissible) return;
   }
@@ -322,13 +322,13 @@ watchEffect((onInvalidate) => {
 
 watchEffect((onInvalidate) => {
   // Guard: skip if running in a non-browser environment (e.g. SSR)
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   /**
    * If the theme prop is explicitly set (e.g., 'light' or 'dark'),
    * use it directly and stop watching for system preference.
    */
-  if (props.theme !== 'system') {
+  if (props.theme !== "system") {
     actualTheme.value = props.theme;
     return;
   }
@@ -338,7 +338,7 @@ watchEffect((onInvalidate) => {
    * Watch the user's OS-level color scheme preference and
    * apply 'dark' or 'light' accordingly.
    */
-  const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const darkMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
   /**
    * Helper function to update the actualTheme value
@@ -347,7 +347,7 @@ watchEffect((onInvalidate) => {
    * @param {boolean} matches - true if dark mode is preferred
    */
   const updateTheme = (matches: boolean) => {
-    actualTheme.value = matches ? 'dark' : 'light';
+    actualTheme.value = matches ? "dark" : "light";
   };
 
   // Apply initial system preference
@@ -363,7 +363,7 @@ watchEffect((onInvalidate) => {
 
   try {
     // ✅ Standard method (Chrome, Firefox, etc.)
-    darkMediaQuery.addEventListener('change', handler);
+    darkMediaQuery.addEventListener("change", handler);
   }
   catch {
     // 🐞 Safari fallback
@@ -373,7 +373,7 @@ watchEffect((onInvalidate) => {
   // Cleanup listener on component unmount or dependency change
   onInvalidate(() => {
     try {
-      darkMediaQuery.removeEventListener('change', handler);
+      darkMediaQuery.removeEventListener("change", handler);
     }
     catch {
       darkMediaQuery.removeListener(handler);
@@ -420,7 +420,7 @@ watchEffect((onInvalidate) => {
     const isItemActive = document.activeElement === listRef.value ||
       listRefItem?.contains(document.activeElement);
 
-    if (event.code === 'Escape' && isItemActive) {
+    if (event.code === "Escape" && isItemActive) {
       // Collapse all positions when escape is pressed
       possiblePositions.value.forEach(pos => {
         expanded.value[pos] = false;
@@ -430,22 +430,22 @@ watchEffect((onInvalidate) => {
 
   if (!isClient) return;
 
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 
   onInvalidate(() => {
-    document.removeEventListener('keydown', handleKeyDown);
+    document.removeEventListener("keydown", handleKeyDown);
   });
 });
 
 function handleMouseEnter(event: MouseEvent) {
   const target = event.currentTarget as HTMLElement;
-  const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position');
+  const position = target.getAttribute("data-y-position") + "-" + target.getAttribute("data-x-position");
   expanded.value[position] = true;
 }
 function handleMouseLeave(event: MouseEvent) {
   if (!interacting.value) {
     const target = event.currentTarget as HTMLElement;
-    const position = target.getAttribute('data-y-position') + '-' + target.getAttribute('data-x-position');
+    const position = target.getAttribute("data-y-position") + "-" + target.getAttribute("data-x-position");
     expanded.value[position] = false;
   }
 }

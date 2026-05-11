@@ -1,14 +1,14 @@
-import type { CSSProperties, Component } from 'vue';
+import type { CSSProperties, Component } from "vue";
 
 export type ToastTypes =
-  | 'normal'
-  | 'action'
-  | 'success'
-  | 'info'
-  | 'warning'
-  | 'error'
-  | 'loading'
-  | 'default';
+  | "normal"
+  | "action"
+  | "success"
+  | "info"
+  | "warning"
+  | "error"
+  | "loading"
+  | "default";
 
 export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>);
 
@@ -25,7 +25,7 @@ export type PromiseTResult<Data = any> =
   | Component
   | ((data: Data) => Component | string | Promise<Component | string>);
 
-export type PromiseExternalToast = Omit<ExternalToast, 'description'>;
+export type PromiseExternalToast = Omit<ExternalToast, "description">;
 
 export type PromiseData<ToastData = any> = PromiseExternalToast & {
   loading?: string | Component;
@@ -106,14 +106,14 @@ export function isAction(action: Action | Component): action is Action {
 }
 
 export type Position =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right'
-  | 'top-center'
-  | 'bottom-center';
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "top-center"
+  | "bottom-center";
 
-export type CloseButtonPosition = Exclude<Position, 'top-center' | 'bottom-center'>;
+export type CloseButtonPosition = Exclude<Position, "top-center" | "bottom-center">;
 
 export interface HeightT {
   height: number;
@@ -164,13 +164,13 @@ export interface ToasterProps {
   style?: CSSProperties;
   offset?: Offset;
   mobileOffset?: Offset;
-  dir?: 'rtl' | 'ltr' | 'auto';
+  dir?: "rtl" | "ltr" | "auto";
   swipeDirections?: SwipeDirection[];
   icons?: ToastIcons;
   containerAriaLabel?: string;
 }
 
-export type SwipeDirection = 'top' | 'right' | 'bottom' | 'left';
+export type SwipeDirection = "top" | "right" | "bottom" | "left";
 
 export interface ToastProps {
   toast: ToastT;
@@ -202,12 +202,12 @@ export interface ToastProps {
 }
 
 export enum SwipeStateTypes {
-  SwipedOut = 'SwipedOut',
-  SwipedBack = 'SwipedBack',
-  NotSwiped = 'NotSwiped',
+  SwipedOut = "SwipedOut",
+  SwipedBack = "SwipedBack",
+  NotSwiped = "NotSwiped",
 }
 
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = "light" | "dark" | "system";
 
 export interface ToastToDismiss {
   id: number | string;
@@ -217,7 +217,7 @@ export interface ToastToDismiss {
 export type ExternalToast<T extends Component = Component> =
   & Omit<
     ToastT<T>,
-    'id' | 'type' | 'title' | 'promise' | 'delete'
+    "id" | "type" | "title" | "promise" | "delete"
   >
   & {
     id?: number | string;

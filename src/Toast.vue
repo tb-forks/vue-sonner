@@ -153,22 +153,22 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect, nextTick } from 'vue';
-import { type HeightT, type ToastProps, type ToastT, isAction } from './types';
-import { useIsDocumentHidden, cn, getDefaultSwipeDirections } from './hooks';
-import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from './constant';
+import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect, nextTick } from "vue";
+import { type HeightT, type ToastProps, type ToastT, isAction } from "./types";
+import { useIsDocumentHidden, cn, getDefaultSwipeDirections } from "./hooks";
+import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from "./constant";
 
 const props = defineProps<ToastProps>();
 
 const emit = defineEmits<{
-  (e: 'update:heights', heights: HeightT[]): void;
-  (e: 'update:height', height: HeightT): void;
-  (e: 'removeToast', toast: ToastT): void;
+  (e: "update:heights", heights: HeightT[]): void;
+  (e: "update:height", height: HeightT): void;
+  (e: "removeToast", toast: ToastT): void;
 }>();
 
 // State
-const swipeDirection = ref<'x' | 'y' | null>(null);
-const swipeOutDirection = ref<'left' | 'right' | 'up' | 'down' | null>(null);
+const swipeDirection = ref<"x" | "y" | null>(null);
+const swipeOutDirection = ref<"left" | "right" | "up" | "down" | null>(null);
 const mounted = ref(false);
 const removed = ref(false);
 const swiping = ref(false);
@@ -185,8 +185,8 @@ const isFront = computed(() => props.index === 0);
 const isVisible = computed(() => props.index + 1 <= props.visibleToasts);
 const toastType = computed(() => props.toast.type);
 const dismissible = computed(() => props.toast.dismissible !== false);
-const toastClass = computed(() => props.toast.class || '');
-const toastDescriptionClass = computed(() => props.descriptionClass || '');
+const toastClass = computed(() => props.toast.class || "");
+const toastDescriptionClass = computed(() => props.descriptionClass || "");
 
 const heightIndex = computed(() => {
   // Only calculate the index of toasts in the same position
@@ -221,13 +221,13 @@ const duration = computed(
 const closeTimerStartTimeRef = ref(0);
 const lastCloseTimerStartTimeRef = ref(0);
 const pointerStartRef = ref<{ x: number; y: number; } | null>(null);
-const coords = computed(() => props.position.split('-'));
+const coords = computed(() => props.position.split("-"));
 const y = computed(() => coords.value[0]);
 const x = computed(() => coords.value[1]);
-const isStringOfTitle = computed(() => typeof props.toast.title !== 'string');
-const isStringOfDescription = computed(() => typeof props.toast.description !== 'string');
+const isStringOfTitle = computed(() => typeof props.toast.title !== "string");
+const isStringOfDescription = computed(() => typeof props.toast.description !== "string");
 const { isDocumentHidden } = useIsDocumentHidden();
-const disabled = computed(() => toastType.value && toastType.value === 'loading');
+const disabled = computed(() => toastType.value && toastType.value === "loading");
 
 onMounted(() => {
   mounted.value = true;
@@ -243,14 +243,14 @@ watchEffect(async () => {
 
   const toastNode = toastRef.value;
   const originalHeight = toastNode.style.height;
-  toastNode.style.height = 'auto';
+  toastNode.style.height = "auto";
   const newHeight = toastNode.getBoundingClientRect().height;
   toastNode.style.height = originalHeight as string;
 
   initialHeight.value = newHeight;
 
   // Simplified: only report current toast's height information
-  emit('update:height', {
+  emit("update:height", {
     toastId: props.toast.id,
     height: newHeight,
     position: props.toast.position || props.position,
@@ -264,10 +264,11 @@ function deleteToast() {
 
   // No longer directly manipulate heights array, let Toaster component handle it uniformly after receiving removeToast event
   setTimeout(() => {
-    emit('removeToast', props.toast);
+    emit("removeToast", props.toast);
   }, TIME_BEFORE_UNMOUNT);
 }
 
+// @ts-expect-error
 function handleCloseToast() {
   if (disabled.value || !dismissible.value) return {};
   deleteToast();
@@ -281,7 +282,7 @@ function onPointerDown(event: PointerEvent) {
   offsetBeforeRemove.value = offset.value;
   // Ensure we maintain correct pointer capture even when going outside of the toast (e.g. when swiping)
   (event.target as HTMLElement).setPointerCapture(event.pointerId);
-  if ((event.target as HTMLElement).tagName === 'BUTTON') return;
+  if ((event.target as HTMLElement).tagName === "BUTTON") return;
   swiping.value = true;
   pointerStartRef.value = { x: event.clientX, y: event.clientY };
 }
@@ -291,14 +292,14 @@ function onPointerUp() {
   pointerStartRef.value = null;
 
   const swipeAmountX = Number(
-    toastRef.value?.style.getPropertyValue('--swipe-amount-x').replace('px', '') || 0,
+    toastRef.value?.style.getPropertyValue("--swipe-amount-x").replace("px", "") || 0,
   );
   const swipeAmountY = Number(
-    toastRef.value?.style.getPropertyValue('--swipe-amount-y').replace('px', '') || 0,
+    toastRef.value?.style.getPropertyValue("--swipe-amount-y").replace("px", "") || 0,
   );
   const timeTaken = new Date().getTime() - (dragStartTime.value?.getTime() || 0);
 
-  const swipeAmount = swipeDirection.value === 'x' ? swipeAmountX : swipeAmountY;
+  const swipeAmount = swipeDirection.value === "x" ? swipeAmountX : swipeAmountY;
   const velocity = Math.abs(swipeAmount) / timeTaken;
 
   if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
@@ -306,11 +307,11 @@ function onPointerUp() {
 
     props.toast.onDismiss?.(props.toast);
 
-    if (swipeDirection.value === 'x') {
-      swipeOutDirection.value = swipeAmountX > 0 ? 'right' : 'left';
+    if (swipeDirection.value === "x") {
+      swipeOutDirection.value = swipeAmountX > 0 ? "right" : "left";
     }
     else {
-      swipeOutDirection.value = swipeAmountY > 0 ? 'down' : 'up';
+      swipeOutDirection.value = swipeAmountY > 0 ? "down" : "up";
     }
 
     deleteToast();
@@ -319,8 +320,8 @@ function onPointerUp() {
     return;
   }
   else {
-    toastRef.value?.style.setProperty('--swipe-amount-x', `0px`);
-    toastRef.value?.style.setProperty('--swipe-amount-y', `0px`);
+    toastRef.value?.style.setProperty("--swipe-amount-x", `0px`);
+    toastRef.value?.style.setProperty("--swipe-amount-y", `0px`);
   }
   swiped.value = false;
   swiping.value = false;
@@ -340,7 +341,7 @@ function onPointerMove(event: PointerEvent) {
   const swipeDirections = props.swipeDirections ?? getDefaultSwipeDirections(props.position);
 
   if (!swipeDirection.value && (Math.abs(xDelta) > 1 || Math.abs(yDelta) > 1)) {
-    swipeDirection.value = Math.abs(xDelta) > Math.abs(yDelta) ? 'x' : 'y';
+    swipeDirection.value = Math.abs(xDelta) > Math.abs(yDelta) ? "x" : "y";
   }
 
   let swipeAmount = { x: 0, y: 0 };
@@ -352,10 +353,10 @@ function onPointerMove(event: PointerEvent) {
   };
 
   // Only apply swipe in the locked direction
-  if (swipeDirection.value === 'y') {
+  if (swipeDirection.value === "y") {
     // Handle vertical swipes
-    if (swipeDirections.includes('top') || swipeDirections.includes('bottom')) {
-      if ((swipeDirections.includes('top') && yDelta < 0) || (swipeDirections.includes('bottom') && yDelta > 0)) {
+    if (swipeDirections.includes("top") || swipeDirections.includes("bottom")) {
+      if ((swipeDirections.includes("top") && yDelta < 0) || (swipeDirections.includes("bottom") && yDelta > 0)) {
         swipeAmount.y = yDelta;
       }
       else {
@@ -366,10 +367,10 @@ function onPointerMove(event: PointerEvent) {
       }
     }
   }
-  else if (swipeDirection.value === 'x') {
+  else if (swipeDirection.value === "x") {
     // Handle horizontal swipes
-    if (swipeDirections.includes('left') || swipeDirections.includes('right')) {
-      if ((swipeDirections.includes('left') && xDelta < 0) || (swipeDirections.includes('right') && xDelta > 0)) {
+    if (swipeDirections.includes("left") || swipeDirections.includes("right")) {
+      if ((swipeDirections.includes("left") && xDelta < 0) || (swipeDirections.includes("right") && xDelta > 0)) {
         swipeAmount.x = xDelta;
       }
       else {
@@ -386,8 +387,8 @@ function onPointerMove(event: PointerEvent) {
   }
 
   // Apply transform using both x and y values
-  toastRef.value?.style.setProperty('--swipe-amount-x', `${swipeAmount.x}px`);
-  toastRef.value?.style.setProperty('--swipe-amount-y', `${swipeAmount.y}px`);
+  toastRef.value?.style.setProperty("--swipe-amount-x", `${swipeAmount.x}px`);
+  toastRef.value?.style.setProperty("--swipe-amount-y", `${swipeAmount.y}px`);
 }
 
 // Lifecycle hooks
@@ -403,22 +404,22 @@ onMounted(() => {
     { toastId: props.toast.id, height, position: props.toast.position! },
     ...props.heights,
   ];
-  emit('update:heights', newHeights);
+  emit("update:heights", newHeights);
 });
 
 onBeforeUnmount(() => {
   // Notify Toaster to remove corresponding height record when component unmounts
   if (toastRef.value) {
-    emit('removeToast', props.toast);
+    emit("removeToast", props.toast);
   }
 });
 
 // Watchers
 watchEffect((onInvalidate) => {
   if (
-    (props.toast.promise && toastType.value === 'loading') ||
+    (props.toast.promise && toastType.value === "loading") ||
     props.toast.duration === Infinity ||
-    props.toast.type === 'loading'
+    props.toast.type === "loading"
   ) {
     return;
   }

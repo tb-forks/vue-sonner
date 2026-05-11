@@ -1,4 +1,4 @@
-import type { Plugin } from 'vue';
+import type { Plugin } from "vue";
 import type {
   ToasterProps,
   ToastT,
@@ -8,10 +8,10 @@ import type {
   ToastToDismiss,
   PromiseIExtendedResult,
   ToastTypes,
-} from './types';
-import { Toaster } from './component';
-import { toast } from './state';
-import { useVueSonner } from './hooks';
+} from "./types";
+import { Toaster } from "./component";
+import { toast } from "./state";
+import { useVueSonner } from "./hooks";
 
 export {
   Toaster,
@@ -29,7 +29,7 @@ export {
 
 const plugin: Plugin = {
   install(app) {
-    app.component('Toaster', Toaster);
+    app.component("Toaster", Toaster);
   },
 };
 

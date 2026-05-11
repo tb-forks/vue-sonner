@@ -1,7 +1,7 @@
-import { nextTick, ref, watchEffect, type CSSProperties, type Ref } from 'vue';
-import type { SwipeDirection, ToasterProps, ToastT } from './types';
-import { ToastState } from './state';
-import { MOBILE_VIEWPORT_OFFSET, VIEWPORT_OFFSET } from './constant';
+import { nextTick, ref, watchEffect, type CSSProperties, type Ref } from "vue";
+import type { SwipeDirection, ToasterProps, ToastT } from "./types";
+import { ToastState } from "./state";
+import { MOBILE_VIEWPORT_OFFSET, VIEWPORT_OFFSET } from "./constant";
 
 export function useIsDocumentHidden() {
   const isDocumentHidden = ref(false);
@@ -10,8 +10,8 @@ export function useIsDocumentHidden() {
     const callback = () => {
       isDocumentHidden.value = document.hidden;
     };
-    document.addEventListener('visibilitychange', callback);
-    return () => window.removeEventListener('visibilitychange', callback);
+    document.addEventListener("visibilitychange", callback);
+    return () => window.removeEventListener("visibilitychange", callback);
   });
 
   return {
@@ -20,13 +20,13 @@ export function useIsDocumentHidden() {
 }
 
 export function cn(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 export function getDefaultSwipeDirections(
   position: string,
 ): Array<SwipeDirection> {
-  const [y, x] = position.split('-');
+  const [y, x] = position.split("-");
   const directions: Array<SwipeDirection> = [];
 
   if (y) {
@@ -41,31 +41,31 @@ export function getDefaultSwipeDirections(
 }
 
 export function assignOffset(
-  defaultOffset: ToasterProps['offset'],
-  mobileOffset: ToasterProps['mobileOffset'],
+  defaultOffset: ToasterProps["offset"],
+  mobileOffset: ToasterProps["mobileOffset"],
 ) {
   const styles = {} as CSSProperties;
   [defaultOffset, mobileOffset].forEach((offset, index) => {
     const isMobile = index === 1;
-    const prefix = isMobile ? '--mobile-offset' : '--offset';
+    const prefix = isMobile ? "--mobile-offset" : "--offset";
     const defaultValue = isMobile ? MOBILE_VIEWPORT_OFFSET : VIEWPORT_OFFSET;
 
     function assignAll(offset: string | number) {
-      ['top', 'right', 'bottom', 'left'].forEach((key) => {
-        styles[`${prefix}-${key}`] = typeof offset === 'number' ? `${offset}px` : offset;
+      ["top", "right", "bottom", "left"].forEach((key) => {
+        styles[`${prefix}-${key}`] = typeof offset === "number" ? `${offset}px` : offset;
       });
     }
 
-    if (typeof offset === 'number' || typeof offset === 'string') {
+    if (typeof offset === "number" || typeof offset === "string") {
       assignAll(offset);
     }
-    else if (typeof offset === 'object') {
-      ['top', 'right', 'bottom', 'left'].forEach((key) => {
+    else if (typeof offset === "object") {
+      ["top", "right", "bottom", "left"].forEach((key) => {
         if (offset[key as keyof typeof offset] === undefined) {
           styles[`${prefix}-${key}`] = defaultValue;
         }
         else {
-          styles[`${prefix}-${key}`] = typeof offset[key as keyof typeof offset] === 'number' ?
+          styles[`${prefix}-${key}`] = typeof offset[key as keyof typeof offset] === "number" ?
             `${offset[key as keyof typeof offset]}px` :
             offset[key as keyof typeof offset];
         }
@@ -86,7 +86,7 @@ export function useVueSonner(): {
 
   watchEffect((onInvalidate) => {
     const unsubscribe = ToastState.subscribe((toast) => {
-      if ('dismiss' in toast && toast.dismiss) {
+      if ("dismiss" in toast && toast.dismiss) {
         activeToasts.value = activeToasts.value.filter((t) => t.id !== toast.id);
         return;
       }
