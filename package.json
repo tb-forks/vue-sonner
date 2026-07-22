@@ -2,8 +2,8 @@
   "name": "@tb-dev/vue-sonner",
   "description": "Sonner for Vue",
   "type": "module",
-  "version": "1.0.8",
-  "packageManager": "pnpm@11.11.0",
+  "version": "1.0.9",
+  "packageManager": "pnpm@11.15.1",
   "license": "MIT",
   "homepage": "https://github.com/tb-forks/vue-sonner",
   "repository": {
@@ -17,23 +17,23 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "vue": "^3.5.39"
+    "vue": "^3.5.40"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "@vitejs/plugin-vue": "^6.0.7",
+    "@vitejs/plugin-vue": "^6.0.8",
     "@vue/language-core": "^3.3.7",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "unplugin-dts": "^1.0.3",
-    "vite": "^8.1.4",
+    "vite": "^8.1.5",
     "vue-tsc": "^3.3.7"
   },
   "main": "./dist/index.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./style.css": "./dist/index.css"
