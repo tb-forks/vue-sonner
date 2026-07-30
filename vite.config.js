@@ -4,7 +4,13 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
-  plugins: [vue(), dts({ bundleTypes: false })],
+  plugins: [
+    vue(),
+    dts({
+      entryRoot: "src",
+      bundleTypes: false,
+    }),
+  ],
   build: {
     outDir: "dist",
     emptyOutDir: true,
