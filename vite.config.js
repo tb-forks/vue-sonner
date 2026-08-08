@@ -6,10 +6,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   plugins: [
     vue(),
-    dts({
-      entryRoot: "src",
-      bundleTypes: false,
-    }),
+    dts({ entryRoot: "src", bundleTypes: false }),
   ],
   build: {
     outDir: "dist",
