@@ -8,5 +8,5 @@ minimumReleaseAgeExclude:
   - "@tsukilabs/*"
 
 overrides:
-  nanoid@<3.3.17: ^3.3.17
+  nanoid@<3.3.18: ^3.3.18
   postcss@<=8.5.22: ^8.5.23

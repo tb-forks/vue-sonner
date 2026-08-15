@@ -2,7 +2,7 @@
   "name": "@tb-dev/vue-sonner",
   "description": "Sonner for Vue",
   "type": "module",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "packageManager": "pnpm@11.21.0",
   "license": "MIT",
   "homepage": "https://github.com/tb-forks/vue-sonner",
